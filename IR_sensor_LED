@@ -1,0 +1,141 @@
+ 
+#include <IRremote.h>
+
+int IRPin = 11;
+
+// LED PINS
+
+int led[] = {2,3,4,5,6,7,8,9} ;
+
+// LEDs for each digit are shown below based on HEX code, -1 denotes end 
+
+int ledSwitch[10][8]={{0,1,2,4,5,6,7,-1}, //zero
+                      {0,5,4,-1},
+                      {1,0,6,7,3,4,-1 },
+                      {1,0,3,5,6,4,-1 }, //3
+                      {2,3,5,0,4,-1},
+                      {1,2,3,5,6,4,-1},
+                      {2,7,6,5,3,4,-1}, //six
+                      {1,0,5,4,-1},
+                      {1,2,3,5,6,7,0,4},
+                      {1,2,3,0,5,4,-1} //nine
+                      } ;
+
+
+IRrecv recv(IRPin); // recieve IR signals
+decode_results results;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  recv.enableIRIn();
+  for (int i=0; i<8; i++) {
+    pinMode (led[i], OUTPUT);
+    digitalWrite(led[i], LOW);
+  }
+}
+
+void reset () {
+  for (int i=0; i<8; i++) 
+    digitalWrite(led[i], LOW);
+ 
+  }
+
+void lightUp( int row){
+
+  for (int i=0; i<8; i++) {
+    if (ledSwitch[row][i]==-1) return;
+    digitalWrite (led[ledSwitch[row][i]], HIGH);
+  
+  }
+  
+}  
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if (recv.decode(&results)) {
+    //Serial.println(results.value, HEX);
+    recv.resume();
+
+    switch (results.value){
+      
+      case 0x1FE48B7:
+        Serial.println("ON");
+        reset();
+        break;
+        
+      case 0xFFFFFFFF :
+        Serial.println("OFF");
+        reset();
+        break;
+        
+       case 0x1FEE01F :
+        Serial.println("ZERO");
+        reset();
+        lightUp(0); 
+        break;
+        
+       case 0x1FE50AF :
+        Serial.println("ONE");
+        reset();
+        lightUp(1);
+        break;
+        
+       case 0x1FED827 :                  
+        Serial.println("TWO");
+        reset();
+        lightUp(2);
+        break;
+        
+       case 0x1FEF807 :
+        reset();    
+        lightUp(3);
+        Serial.println("THREE");
+        break;
+        
+       case 0x1FE30CF :
+        Serial.println("FOUR");
+        reset();
+        lightUp(4);   
+        break;
+        
+       case 0x1FEB04F :
+        Serial.println("FIVE");
+        reset();
+        lightUp(5);        
+        break;
+        
+       case 0x1FE708F :
+        Serial.println("SIX");
+        reset();
+        lightUp(6); 
+        break;
+        
+       case 0x1FE00FF :
+        Serial.println("SEVEN");
+        reset();
+        lightUp(7);
+        break;
+        
+       case 0x1FEF00F :
+        Serial.println("EIGHT");
+        reset();
+        lightUp(8);
+        break;
+        
+       case 0x1FE9867 :
+        Serial.println("NINE");
+        reset();
+        lightUp(9);
+        break;
+        
+       default:
+        Serial.println("Undefined");
+        reset();
+        break;    
+      }
+         
+    }
+    delay(100);
+
+}
